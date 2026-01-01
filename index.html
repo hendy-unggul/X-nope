@@ -159,8 +159,8 @@
       }
 
       try {
-        const { , error } = await supabase.auth.getSession();
-        if (error || !session) throw new Error("Sesi hilang");
+        const { data: { session }, error: authError } = await supabase.auth.getSession();
+        if (authError || !session) throw new Error("Sesi hilang");
 
         const { error: insertError } = await supabase.from('rants').insert({
           user_id: session.user.id,
@@ -180,19 +180,19 @@
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
-      const { , error } = await supabase.auth.getSession();
-      if (error || !session) {
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      if (authError || !session) {
         window.location.href = 'login.html';
         return;
       }
 
-      const { , profileError } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('username')
         .eq('id', session.user.id)
         .single();
 
-      const username = profileError ? 'frekuensi' : data.username;
+      const username = profileError ? 'frekuensi' : profile.username;
       document.getElementById('user-greeting').textContent = `Hello @${username} 👋`;
 
       document.getElementById('loading').style.display = 'none';
