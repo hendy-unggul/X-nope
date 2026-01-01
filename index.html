@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NOPE — Frekuensi</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: #fafafa;
+      color: #333;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .loading { text-align: center; padding: 50px; color: #666; }
+    header {
+      text-align: center;
+      padding: 24px 0;
+    }
+    header h1 {
+      color: #ff4d79;
+      font-size: 28px;
+    }
+    header p {
+      color: #666;
+      margin-top: 8px;
+      font-size: 16px;
+    }
+    .nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 24px 0;
+    }
+    .nav-btn {
+      padding: 10px 20px;
+      border-radius: 24px;
+      font-weight: bold;
+      color: white;
+      text-decoration: none;
+      font-size: 15px;
+      transition: transform 0.2s;
+    }
+    .btn-hype { background: #ff6b9f; }
+    .btn-ngusahain { background: #2ecc71; }
+    .btn-spill { background: #f39c12; }
+    .btn-hangouts { background: #3498db; }
+
+    .content {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 20px;
+      text-align: center;
+      color: #888;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .rant-input textarea {
+      width: 100%;
+      height: 80px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      font-size: 15px;
+      margin-top: 12px;
+    }
+    .rant-input button {
+      margin-top: 12px;
+      padding: 10px 20px;
+      background: #6c5ce7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 12px;
+      font-weight: bold;
+      min-height: 24px;
+    }
+    .error { color: #e74c3c; }
+    .success { color: #2ecc71; }
+  </style>
+</head>
+<body>
+  <div class="loading" id="loading">Memeriksa sesimu...</div>
+
+  <div id="main" style="display:none;">
+    <header>
+      <h1>NOPE</h1>
+      <p id="user-greeting">Hello 👋</p>
+    </header>
+
+    <div class="nav">
+      <a href="#" class="nav-btn btn-hype">Hype Haus</a>
+      <a href="#" class="nav-btn btn-ngusahain">Ngusahain</a>
+      <a href="#" class="nav-btn btn-spill">Spill Zone</a>
+      <a href="#" class="nav-btn btn-hangouts">Hangouts</a>
+    </div>
+
+    <div class="content">
+      <p>Jejakkan rant-mu. Gunakan kata alami — sistem akan otomatis mengelompokkan.</p>
+      
+      <div class="rant-input">
+        <textarea id="rant-input" placeholder="Contoh: &#10;• 'baru nonton drakor, ending-nya bikin nangis' &#10;• 'hari ini sidang skripsi, alhamdulillah lulus!'"></textarea>
+        <button onclick="submitRant()">Jejakkan</button>
+        <div class="result" id="result"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // 🔑 GANTI DENGAN DATA SUPABASE-MU
+    const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 🧠 40 KATA KUNCI TERAKHIR (10 jam terakhir)
+    const KEYWORDS = {
+      hype: ['idol','drakor','kpop','au','fanfic','bias','comeback','mv','stan','fyp','viral','trending'],
+      ngusahain: ['skripsi','ta','sidang','kuliah','kerja','jualan','thrifting','bisnis','usaha','progres','deadline','magang','cv','wawancara'],
+      spill: ['curhat','ngeluh','capek','galau','sendiri','patah','toxic','marah','sedih','nangis','kosong','putus','frustrasi','bete']
+    };
+
+    // 🔍 Klasifikasi rant berdasarkan kata kunci
+    function classifyRant(text) {
+      const lower = text.toLowerCase();
+      const scores = { hype: 0, ngusahain: 0, spill: 0 };
+
+      for (const [zone, words] of Object.entries(KEYWORDS)) {
+        for (const word of words) {
+          if (lower.includes(word)) scores[zone]++;
+        }
+      }
+
+      const maxZone = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+      return scores[maxZone] > 0 ? maxZone : null;
+    }
+
+    // 📤 Kirim rant ke Supabase
+    async function submitRant() {
+      const text = document.getElementById('rant-input').value.trim();
+      const resultEl = document.getElementById('result');
+      resultEl.className = 'result';
+
+      if (!text) {
+        resultEl.textContent = "Rant tidak boleh kosong";
+        resultEl.classList.add('error');
+        return;
+      }
+
+      const zone = classifyRant(text);
+      if (!zone) {
+        resultEl.innerHTML = "⚠️ Tidak terdeteksi zona.<br>Gunakan kata seperti: <i>drakor, skripsi, curhat</i>";
+        resultEl.classList.add('error');
+        return;
+      }
+
+      try {
+        const {  { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error("Sesi hilang");
+
+        const { error } = await supabase.from('rants').insert({
+          user_id: session.user.id,
+          content: text,
+          zone: zone
+        });
+
+        if (error) throw error;
+
+        resultEl.innerHTML = `✅ Berhasil! Masuk ke: <strong>${zone}</strong>`;
+        resultEl.classList.add('success');
+        document.getElementById('rant-input').value = '';
+      } catch (err) {
+        resultEl.textContent = "Gagal: " + (err.message || "Coba lagi");
+        resultEl.classList.add('error');
+      }
+    }
+
+    // 🔐 Cek sesi saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', async () => {
+      const {  { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Ambil username dari profile
+      const { , error } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', session.user.id)
+        .single();
+
+      const username = error ? 'frekuensi' : data.username;
+      document.getElementById('user-greeting').textContent = `Hello @${username} 👋`;
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('main').style.display = 'block';
+    });
+  </script>
+</body>
+</html>
