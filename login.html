@@ -98,12 +98,11 @@
     <div class="error" id="error-message"></div>
   </div>
 
-  <!-- Supabase Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // 🔑 GANTI DENGAN DATA SUPABASE-MU
-    const SUPABASE_URL = "https://oofcfslbimuqledladwp.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vZmNmc2xiaW11cWxlZGxhZHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyNTYxNzYsImV4cCI6MjA4MjgzMjE3Nn0.dnHyzlO7ZutEoHytPeLVAnfz6Vr4ySKbVORvRnvPRnk";
+    const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
 
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -125,16 +124,13 @@
       errorEl.textContent = '';
 
       try {
-        // Buat email & password unik (user tidak tahu)
         const email = usernameInput.replace(/\s+/g, '.').toLowerCase() + '@nope.user';
         const password = 'nope_secret_' + Math.random().toString(36).slice(2, 12);
 
-        // Coba login
-        let { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        let { , error } = await supabase.auth.signInWithPassword({ email, password });
 
-        // Jika belum ada, buat akun
         if (error?.message?.includes('Invalid login')) {
-          ({ data, error } = await supabase.auth.signUp({
+          ({ , error } = await supabase.auth.signUp({
             email,
             password,
             options: {  { username: usernameInput } }
@@ -143,7 +139,6 @@
 
         if (error) throw error;
 
-        // Redirect ke index
         window.location.href = 'index.html';
       } catch (err) {
         loading.style.display = 'none';
