@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NOPE — Masuk</title>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #fafafa;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: #333;
+    }
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+      text-align: center;
+    }
+    h1 {
+      color: #ff4d79;
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+    p {
+      color: #666;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    input {
+      width: 100%;
+      padding: 14px;
+      margin: 8px 0;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #6c5ce7;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+    .loading {
+      display: none;
+      margin: 24px auto;
+    }
+    .error {
+      color: #e74c3c;
+      margin-top: 16px;
+      font-size: 14px;
+    }
+    .note {
+      font-size: 13px;
+      color: #888;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>NOPE</h1>
+    <p>Dua kata unik. Simpan selamanya.</p>
+
+    <input type="text" id="username" placeholder="matahari timur" maxlength="30" autocomplete="off" />
+
+    <button id="login-btn">Gaskeun</button>
+
+    <div class="note">Contoh: "kopi susu", "malam sunyi", "langit jatuh"</div>
+
+    <div class="loading" id="loading-animation">
+      <lottie-player
+        src="https://assets5.lottiefiles.com/packages/lf20_klxnljtp.json"
+        background="transparent"
+        speed="1"
+        style="width: 100px; height: 100px; margin: 0 auto;"
+        loop
+        autoplay>
+      </lottie-player>
+      <p>Menyimpan frekuensimu...</p>
+    </div>
+
+    <div class="error" id="error-message"></div>
+  </div>
+
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // 🔑 GANTI DENGAN DATA SUPABASE-MU
+    const SUPABASE_URL = "https://oofcfslbimuqledladwp.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vZmNmc2xiaW11cWxlZGxhZHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyNTYxNzYsImV4cCI6MjA4MjgzMjE3Nn0.dnHyzlO7ZutEoHytPeLVAnfz6Vr4ySKbVORvRnvPRnk";
+
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    document.getElementById('login-btn').addEventListener('click', async () => {
+      const usernameInput = document.getElementById('username').value.trim();
+      const loading = document.getElementById('loading-animation');
+      const errorEl = document.getElementById('error-message');
+
+      if (!usernameInput || usernameInput.split(' ').length < 2) {
+        errorEl.textContent = "Masukkan dua kata (contoh: 'matahari timur')";
+        return;
+      }
+      if (usernameInput.length > 30) {
+        errorEl.textContent = "Maksimal 30 karakter";
+        return;
+      }
+
+      loading.style.display = 'block';
+      errorEl.textContent = '';
+
+      try {
+        // Buat email & password unik (user tidak tahu)
+        const email = usernameInput.replace(/\s+/g, '.').toLowerCase() + '@nope.user';
+        const password = 'nope_secret_' + Math.random().toString(36).slice(2, 12);
+
+        // Coba login
+        let { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+        // Jika belum ada, buat akun
+        if (error?.message?.includes('Invalid login')) {
+          ({ data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {  { username: usernameInput } }
+          }));
+        }
+
+        if (error) throw error;
+
+        // Redirect ke index
+        window.location.href = 'index.html';
+      } catch (err) {
+        loading.style.display = 'none';
+        errorEl.textContent = 'Gagal: ' + (err.message || 'Coba lagi');
+      }
+    });
+  </script>
+</body>
+</html>
