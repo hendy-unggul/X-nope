@@ -112,22 +112,20 @@
     </div>
   </div>
 
-  <!-- Supabase Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // 🔑 GANTI DENGAN DATA SUPABASE-MU
-    const SUPABASE_URL = "https://oofcfslbimuqledladwp.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vZmNmc2xiaW11cWxlZGxhZHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyNTYxNzYsImV4cCI6MjA4MjgzMjE3Nn0.dnHyzlO7ZutEoHytPeLVAnfz6Vr4ySKbVORvRnvPRnk";
+    const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 🧠 40 KATA KUNCI TERAKHIR (10 jam terakhir)
+    // 🧠 40 KATA KUNCI TERAKHIR
     const KEYWORDS = {
       hype: ['idol','drakor','kpop','au','fanfic','bias','comeback','mv','stan','fyp','viral','trending'],
       ngusahain: ['skripsi','ta','sidang','kuliah','kerja','jualan','thrifting','bisnis','usaha','progres','deadline','magang','cv','wawancara'],
       spill: ['curhat','ngeluh','capek','galau','sendiri','patah','toxic','marah','sedih','nangis','kosong','putus','frustrasi','bete']
     };
 
-    // 🔍 Klasifikasi rant berdasarkan kata kunci
     function classifyRant(text) {
       const lower = text.toLowerCase();
       const scores = { hype: 0, ngusahain: 0, spill: 0 };
@@ -142,7 +140,6 @@
       return scores[maxZone] > 0 ? maxZone : null;
     }
 
-    // 📤 Kirim rant ke Supabase
     async function submitRant() {
       const text = document.getElementById('rant-input').value.trim();
       const resultEl = document.getElementById('result');
@@ -162,16 +159,16 @@
       }
 
       try {
-        const {  { session } } = await supabase.auth.getSession();
-        if (!session) throw new Error("Sesi hilang");
+        const { , error } = await supabase.auth.getSession();
+        if (error || !session) throw new Error("Sesi hilang");
 
-        const { error } = await supabase.from('rants').insert({
+        const { error: insertError } = await supabase.from('rants').insert({
           user_id: session.user.id,
           content: text,
           zone: zone
         });
 
-        if (error) throw error;
+        if (insertError) throw insertError;
 
         resultEl.innerHTML = `✅ Berhasil! Masuk ke: <strong>${zone}</strong>`;
         resultEl.classList.add('success');
@@ -182,22 +179,20 @@
       }
     }
 
-    // 🔐 Cek sesi saat halaman dimuat
     document.addEventListener('DOMContentLoaded', async () => {
-      const {  { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const { , error } = await supabase.auth.getSession();
+      if (error || !session) {
         window.location.href = 'login.html';
         return;
       }
 
-      // Ambil username dari profile
-      const { , error } = await supabase
+      const { , profileError } = await supabase
         .from('profiles')
         .select('username')
         .eq('id', session.user.id)
         .single();
 
-      const username = error ? 'frekuensi' : data.username;
+      const username = profileError ? 'frekuensi' : data.username;
       document.getElementById('user-greeting').textContent = `Hello @${username} 👋`;
 
       document.getElementById('loading').style.display = 'none';
