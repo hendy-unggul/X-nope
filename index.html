@@ -119,7 +119,6 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vZmNmc2xiaW11cWxlZGxhZHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyNTYxNzYsImV4cCI6MjA4MjgzMjE3Nn0.dnHyzlO7ZutEoHytPeLVAnfz6Vr4ySKbVORvRnvPRnk";
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 🧠 40 KATA KUNCI TERAKHIR
     const KEYWORDS = {
       hype: ['idol','drakor','kpop','au','fanfic','bias','comeback','mv','stan','fyp','viral','trending'],
       ngusahain: ['skripsi','ta','sidang','kuliah','kerja','jualan','thrifting','bisnis','usaha','progres','deadline','magang','cv','wawancara'],
@@ -129,13 +128,11 @@
     function classifyRant(text) {
       const lower = text.toLowerCase();
       const scores = { hype: 0, ngusahain: 0, spill: 0 };
-
       for (const [zone, words] of Object.entries(KEYWORDS)) {
         for (const word of words) {
           if (lower.includes(word)) scores[zone]++;
         }
       }
-
       const maxZone = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
       return scores[maxZone] > 0 ? maxZone : null;
     }
