@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NOPE — Masuk</title>
-  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <!-- Lottie aman untuk GitHub Pages -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -59,6 +60,7 @@
     .loading {
       display: none;
       margin: 24px auto;
+      text-align: center;
     }
     .error {
       color: #e74c3c;
@@ -84,15 +86,8 @@
     <div class="note">Contoh: "kopi susu", "malam sunyi", "langit jatuh"</div>
 
     <div class="loading" id="loading-animation">
-      <lottie-player
-        src="https://assets5.lottiefiles.com/packages/lf20_klxnljtp.json"
-        background="transparent"
-        speed="1"
-        style="width: 100px; height: 100px; margin: 0 auto;"
-        loop
-        autoplay>
-      </lottie-player>
-      <p>Menyimpan frekuensimu...</p>
+      <div id="lottie-animation" style="width: 100px; height: 100px; margin: 0 auto;"></div>
+      <p>Mencatat frekuensimu...</p>
     </div>
 
     <div class="error" id="error-message"></div>
@@ -101,10 +96,21 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // 🔑 GANTI DENGAN DATA SUPABASE-MU
-    const SUPABASE_URL = "https://oofcfslbimuqledladwp.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vZmNmc2xiaW11cWxlZGxhZHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyNTYxNzYsImV4cCI6MjA4MjgzMjE3Nn0.dnHyzlO7ZutEoHytPeLVAnfz6Vr4ySKbVORvRnvPRnk";
+    const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
 
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Load Lottie
+    document.addEventListener('DOMContentLoaded', () => {
+      lottie.loadAnimation({
+        container: document.getElementById('lottie-animation'),
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: 'https https://assets5.lottiefiles.com/packages/lf20_klxnljtp.json'
+      });
+    });
 
     document.getElementById('login-btn').addEventListener('click', async () => {
       const usernameInput = document.getElementById('username').value.trim();
